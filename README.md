@@ -1,7 +1,7 @@
 # Pure Java HTTP Server
-###Fast and lightweight HTTP Server
+Fast and lightweight HTTP Server
 
-###Usage
+Usage
 ```java
 HttpServer httpServer = new HttpServerImpl(host, port);
 WebHandler webHandler = new WebHandler() {
