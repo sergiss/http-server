@@ -2,11 +2,11 @@ package com.delmesoft.httpserver;
 
 import java.io.EOFException;
 import java.io.InputStream;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.delmesoft.httpserver.utils.LineReader;
+import com.delmesoft.httpserver.utils.Utils;
 
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
@@ -43,14 +43,16 @@ public class HttpRequest {
 	private String path;
 	private String protocol;
 
-	private Map<String, String> headers = new HashMap<String, String>();
-	private Map<String, String> parameters = new HashMap<>();
+	private Map<String, String> headers;
+	private Map<String, String> parameters;
+	private Map<String, String> cookies;
 	
 	private final transient LineReader lineReader;
 	
 	public HttpRequest() {
 		headers    = new HashMap<>();
 		parameters = new HashMap<>();
+		cookies    = new HashMap<>();
 		lineReader = new LineReader();
 	}
 	
@@ -77,7 +79,7 @@ public class HttpRequest {
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
-	
+
 	public Map<String, String> getParameters() {
 		return parameters;
 	}
@@ -93,16 +95,19 @@ public class HttpRequest {
 	public void setHeaders(Map<String, String> headers) {
 		this.headers = headers;
 	}
-	
-//	public HttpRequest addHeader(String key, String value) {
-//		headers.put(key, value);
-//		return this;
-//	}
-	
+
 	public String getHeader(String key) {
 		return headers.get(key);
 	}
-	
+
+	public Map<String, String> getCookies() {
+		return cookies;
+	}
+
+	public void setCookies(Map<String, String> cookies) {
+		this.cookies = cookies;
+	}
+
 	/**
 	 * Decode HTTP request
 	 * @param is Client InputStream
@@ -125,7 +130,6 @@ public class HttpRequest {
 		protocol = line.substring(j, i);
 		method   = requestParam[0];
 		path     = requestParam[1]; 
-		
 		// Read headers
 		headers.clear();
 		while((line = lineReader.readLine(is)) != null 
@@ -134,14 +138,22 @@ public class HttpRequest {
 			String value = line.substring(index + 2);
 			headers.put(key, value);
 		}
+		// Cookies
+		cookies.clear();
+		String value;
+		if((value = headers.get("Cookie")) != null
+		|| (value = headers.get("cookie")) != null) {
+			Utils.stringToMap(value, ";", cookies);
+		}
+		// Handle method
 		parameters.clear();
 		switch (method) {
-		case "GET":    // retrieve data
+		case "GET": // retrieve data
 			index = path.indexOf('?');
 			if (index > -1) { // check if has parameters
 				String query = path.substring(index + 1);
-				queryToMap(query, parameters);
-				path = path.substring(0, index);
+				Utils.stringToMap(query, "&", parameters);
+				path = path.substring(0, index); // remove parameters from path
 			}
 			break;
 		case "POST": // modify/update resource
@@ -155,28 +167,13 @@ public class HttpRequest {
 					throw new EOFException(); // connection closed
 				n += count;
 			}
-			queryToMap(new String(body, 0, length, "UTF-8"), parameters);
+			String query = new String(body, 0, length, "UTF-8");
+			Utils.stringToMap(query, "&", parameters);
 			break;
 		default:
 			break;
 		}
 		return true;
-	}
-	
-	private Map<String, String> queryToMap(String query, Map<String, String> result) throws Exception {
-		if(query != null) {
-			int idx;
-			for (String pair : query.split("&")) {
-				idx = pair.indexOf('=');
-				if(idx > -1) {
-					result.put(URLDecoder.decode(pair.substring(0, idx) , "UTF-8"),
-							   URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-				} else {
-					result.put(URLDecoder.decode(pair, "UTF-8"), null);
-				}
-			}
-		}
-		return result;
 	}
 
 	@Override
@@ -190,6 +187,10 @@ public class HttpRequest {
 		builder.append(protocol);
 		builder.append(", headers=");
 		builder.append(headers);
+		builder.append(", parameters=");
+		builder.append(parameters);
+		builder.append(", cookies=");
+		builder.append( cookies);
 		builder.append("]");
 		return builder.toString();
 	}

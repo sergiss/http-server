@@ -6,8 +6,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
@@ -45,7 +47,7 @@ import com.delmesoft.httpserver.utils.ChunkedOutputStream;
  */
 public class HttpResponse {
 	
-	private static final byte[] NEW_LINE    = { 13, 10 };
+	private static final byte[] NEW_LINE = { 13, 10 };
 	
 	public enum Status {
 		
@@ -80,12 +82,14 @@ public class HttpResponse {
 	private String message;
 	
 	private Map<String, String> headers;
-	
+	private List<Cookie> cookies;
+		
 	private InputStream content;
 	private int contentLength;
 	
 	public HttpResponse() {
 		headers = new HashMap<String, String>();
+		cookies = new ArrayList<>();
 	}
 	
 	public HttpResponse(int code, String message) {
@@ -142,17 +146,42 @@ public class HttpResponse {
 	public String getHeader(String key) {
 		return headers.get(key);
 	}
+		
+	public List<Cookie> getCookies() {
+		return cookies;
+	}
+
+	public void setCookies(List<Cookie> cookies) {
+		this.cookies = cookies;
+	}
 	
+	public HttpResponse addCookie(Cookie cookie) {
+		this.cookies.add(cookie);
+		return this;
+	}
+
 	public void write(OutputStream os) throws Exception {	
 		// write <protocol> <code> <message>
 		String line = String.format("%s %d %s\r\n", Constants.PROTOCOL, code, message);
 		os.write(line.getBytes());
+		writeCookies(os);		
 		final boolean gzip = "gzip".equals(headers.get("Content-Encoding"));
 		if(!gzip || contentLength == -1) { // without gzip or chunked
 			writeHeaders(os, contentLength);
 		}
 		writeBodyContent(os, gzip);
 		os.flush();
+	}
+
+	private void writeCookies(OutputStream os) throws IOException {
+		if(cookies.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			for (Cookie cookie : cookies) {
+				sb.append(String.format("Set-Cookie: %s\r\n", cookie));
+			}
+			// write cookies
+			os.write(sb.toString().getBytes());
+		}
 	}
 
 	private void writeHeaders(OutputStream os, int contentLength) throws IOException {
@@ -220,7 +249,7 @@ public class HttpResponse {
 			os.write(buffer, 0, r);
 		}
 	}
-
+	
 	public static HttpResponse build(int code, String message) {
 		return new HttpResponse(code, message);
 	}

@@ -66,5 +66,19 @@ public class Utils {
 	public static boolean contains(String a, String b) {
 		return a == null ? false : a.contains(b);
 	}
+	
+	public static void stringToMap(String value, String splitRegex, Map<String, String> result) {
+		if (value != null) {
+			int idx;
+			for (String pair : value.split(splitRegex)) {
+				idx = pair.indexOf('=');
+				if (idx > -1) {
+					result.put(pair.substring(0, idx), pair.substring(idx + 1)); // TODO : .trim()?
+				} else {
+					result.put(pair, null);
+				}
+			}
+		}
+	}
 
 }

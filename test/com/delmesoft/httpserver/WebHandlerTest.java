@@ -3,6 +3,7 @@ package com.delmesoft.httpserver;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Scanner;
 
 import com.delmesoft.httpserver.HttpResponse.Status;
