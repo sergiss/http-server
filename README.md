@@ -5,15 +5,15 @@ Usage
 ```java
 HttpServer httpServer = new HttpServerImpl(host, port);
 WebHandler webHandler = new WebHandler() {
- @Override
- public HttpResponse handleQuery(HttpRequest httpRequest) {
-  // Handle requests
-  return HttpResponse.build(Status.NOT_FOUND);
- }
- @Override
- public InputStream toStream(File file) throws Exception {
-  return new FileInputStream(file); // Convert content to input stream
- }
+  @Override
+  public HttpResponse handleQuery(HttpRequest httpRequest) {
+    // Handle requests
+    return HttpResponse.build(Status.NOT_FOUND);
+  }
+  @Override
+  public InputStream toStream(File file) throws Exception {
+    return new FileInputStream(file); // Convert content to input stream
+  }
 };
 // Set relative path of content folder
 webHandler.setContentFolder("WebContent");
