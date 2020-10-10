@@ -37,7 +37,7 @@ public class Constants {
 	
 	public static final String PROTOCOL = "HTTP/1.1";
 	
-    public static final SimpleDateFormat DATE_FORMAT;
+	public static final SimpleDateFormat DATE_FORMAT;
     
     static {
     	DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
