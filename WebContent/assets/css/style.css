@@ -1,0 +1,18 @@
+body {
+	background-color: yellow;
+	font-family: 'Helvetica Neue', sans-serif;
+}
+
+h1 {
+	color: #111;
+	font-size: 50px;
+	font-weight: bold;
+	letter-spacing: -1px;
+	line-height: 1;
+	text-align: center;
+}
+
+a {
+    bottom: 0%;
+    position: fixed;
+}
