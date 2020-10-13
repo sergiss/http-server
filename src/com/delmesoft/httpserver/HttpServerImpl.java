@@ -61,6 +61,14 @@ public class HttpServerImpl implements HttpServer {
 	
 	private Executor executor;
 	
+	public HttpServerImpl(int port) {
+		this(null, port, DEFAULT_SOCKET_TIMEOUT);
+	}
+	
+	public HttpServerImpl(int port, int socketTimeout) {
+		this(null, port, socketTimeout);
+	}
+	
 	public HttpServerImpl(String host, int port) {
 		this(host, port, DEFAULT_SOCKET_TIMEOUT);
 	}
@@ -70,7 +78,6 @@ public class HttpServerImpl implements HttpServer {
 		this.port = port;
 		this.socketTimeout = socketTimeout;
 		this.httpClientMap = new HashMap<>();
-		
 		executor = new DefaultExecutor();
 	}
 	
@@ -85,7 +92,13 @@ public class HttpServerImpl implements HttpServer {
 			if (!isConnected()) {
 				try {
 					serverSocket = new ServerSocket();
-					serverSocket.bind(new InetSocketAddress(InetAddress.getByName(host), port));
+					InetSocketAddress inetSocketAddress;
+					if (host != null) {
+						inetSocketAddress = new InetSocketAddress(InetAddress.getByName(host), port);
+					} else {
+						inetSocketAddress = new InetSocketAddress(port);
+					}
+					serverSocket.bind(inetSocketAddress);
 					connectionThread(daemon);
 				} catch (Exception e) {
 					disconnect();
