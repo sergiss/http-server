@@ -59,7 +59,8 @@ public abstract class WebHandler implements HttpListener {
 
 	@Override
 	public HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception {
-		if (httpRequest.getParameters().isEmpty()) {
+		if (httpRequest.getParameters().isEmpty() 
+		&& "GET".equals(httpRequest.getMethod())) {
 			final String path = httpRequest.getPath();
 			final String index = indexMap.get(path);
 			final File file = new File(contentFolder, index != null ? index : path);

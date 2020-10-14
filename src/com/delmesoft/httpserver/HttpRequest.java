@@ -2,6 +2,7 @@ package com.delmesoft.httpserver;
 
 import java.io.EOFException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +48,10 @@ public class HttpRequest {
 	private Map<String, String> parameters;
 	private Map<String, String> cookies;
 	
+	private byte[] body;
+	
+	private InetAddress remoteAddress;
+	
 	private final transient LineReader lineReader;
 	
 	public HttpRequest() {
@@ -88,16 +93,25 @@ public class HttpRequest {
 		this.parameters = parameters;
 	}
 
-	public Map<String, String> getHeaders() {
+	protected Map<String, String> getHeaders() {
 		return headers;
 	}
 
-	public void setHeaders(Map<String, String> headers) {
+	protected void setHeaders(Map<String, String> headers) {
 		this.headers = headers;
 	}
 
+	public HttpRequest addHeader(String key, String value) {
+		headers.put(key, value);
+		return this;
+	}
+	
 	public String getHeader(String key) {
-		return headers.get(key);
+		String result = headers.get(key);
+		if(result == null && key != null) {
+			result = headers.get(key.toLowerCase());
+		}
+		return result;
 	}
 
 	public Map<String, String> getCookies() {
@@ -106,6 +120,22 @@ public class HttpRequest {
 
 	public void setCookies(Map<String, String> cookies) {
 		this.cookies = cookies;
+	}
+	
+	public byte[] getBody() {
+		return body;
+	}
+
+	public void setBody(byte[] body) {
+		this.body = body;
+	}
+	
+	public InetAddress getRemoteAddress() {
+		return remoteAddress;
+	}
+	
+	public void setRemoteAddress(InetAddress remoteAddress) {
+		this.remoteAddress = remoteAddress;
 	}
 
 	/**
@@ -141,14 +171,14 @@ public class HttpRequest {
 		// Cookies
 		cookies.clear();
 		String value;
-		if((value = headers.get("Cookie")) != null
-		|| (value = headers.get("cookie")) != null) {
+		if((value = getHeader("Cookie")) != null) {
 			Utils.stringToMap(value, ";", cookies);
 		}
 		// Handle method
 		parameters.clear();
 		switch (method) {
-		case "GET": // retrieve data
+		case "GET":  // retrieve data
+		case "HEAD": // retrieve only head 
 			index = path.indexOf('?');
 			if (index > -1) { // check if has parameters
 				String query = path.substring(index + 1);
@@ -158,17 +188,27 @@ public class HttpRequest {
 			break;
 		case "POST": // modify/update resource
 		case "PUT":  // create resource
-			int length = Integer.parseInt(headers.get("Content-Length")); // body length
-			byte[] body = new byte[length];
+			
+			// TODO : Multipart Implement https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Content-Type
+			
+			value = getHeader("Content-Length");
+			final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
+			byte[] body = new byte[contentLength];
 			int n = 0;
-			while (n < length) { // read all bytes
-				int count = is.read(body, n, length - n);
+			while (n < contentLength) { // read all bytes
+				int count = is.read(body, n, contentLength - n);
 				if (count < 0)
 					throw new EOFException(); // connection closed
 				n += count;
 			}
-			String query = new String(body, 0, length, "UTF-8");
-			Utils.stringToMap(query, "&", parameters);
+			String contentType = getHeader("Content-Type");
+			if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
+				String query = new String(body, 0, contentLength, "UTF-8");
+				Utils.stringToMap(query, "&", parameters);
+			} else if (contentLength > 0) {
+				this.body = body;
+			}
+			
 			break;
 		default:
 			break;

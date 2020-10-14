@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
-
-import com.delmesoft.httpserver.utils.DefaultExecutor;
 
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
@@ -78,7 +77,7 @@ public class HttpServerImpl implements HttpServer {
 		this.port = port;
 		this.socketTimeout = socketTimeout;
 		this.httpClientMap = new HashMap<>();
-		executor = new DefaultExecutor();
+		executor = Executors.newWorkStealingPool(); // Default
 	}
 	
 	@Override

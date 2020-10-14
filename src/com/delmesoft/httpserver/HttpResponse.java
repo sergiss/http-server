@@ -88,7 +88,7 @@ public class HttpResponse {
 	private int contentLength;
 	
 	public HttpResponse() {
-		headers = new HashMap<String, String>();
+		headers = new HashMap<>();
 		cookies = new ArrayList<>();
 	}
 	
@@ -113,14 +113,6 @@ public class HttpResponse {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
-	public Map<String, String> getHeaders() {
-		return headers;
-	}
-
-	public void setHeaders(Map<String, String> headers) {
-		this.headers = headers;
-	}
 
 	public InputStream getContent() {
 		return content;
@@ -138,13 +130,25 @@ public class HttpResponse {
 		this.contentLength = contentLength;
 	}
 	
+	protected Map<String, String> getHeaders() {
+		return headers;
+	}
+
+	protected void setHeaders(Map<String, String> headers) {
+		this.headers = headers;
+	}
+	
 	public HttpResponse addHeader(String key, String value) {
 		headers.put(key, value);
 		return this;
 	}
 	
 	public String getHeader(String key) {
-		return headers.get(key);
+		String result = headers.get(key);
+		if(result == null && key != null) {
+			result = headers.get(key.toLowerCase());
+		}
+		return result;
 	}
 		
 	public List<Cookie> getCookies() {
@@ -186,12 +190,12 @@ public class HttpResponse {
 
 	private void writeHeaders(OutputStream os, int contentLength) throws IOException {
 		// add Date to headers
-		headers.put("Date", Constants.DATE_FORMAT.format(new Date()));
+		addHeader("Date", Constants.DATE_FORMAT.format(new Date()));
 		// add content length to headers
-		headers.put("Content-Length", Integer.toString(contentLength));
+		addHeader("Content-Length", Integer.toString(contentLength));
 		// add Transfer-Encoding chunked
 		if(contentLength == -1) {
-			headers.put("Transfer-Encoding", "chunked");
+			addHeader("Transfer-Encoding", "chunked");
 		}
 		// write headers
 		StringBuilder sb = new StringBuilder();
