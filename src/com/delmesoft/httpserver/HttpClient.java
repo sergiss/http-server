@@ -58,6 +58,7 @@ public class HttpClient implements Runnable {
 				final OutputStream os = socket.getOutputStream();
 				HttpResponse httpResponse;
 				HttpRequest httpRequest = new HttpRequest();
+				httpRequest.setRemoteAddress(socket.getInetAddress());
 				boolean keepAlive = true;
 				while(keepAlive && httpRequest.read(is)) {
 					try {
