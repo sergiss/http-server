@@ -2,7 +2,7 @@ package com.delmesoft.httpserver;
 
 import java.io.EOFException;
 import java.io.InputStream;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +50,7 @@ public class HttpRequest {
 	
 	private byte[] body;
 	
-	private InetAddress remoteAddress;
+	private InetSocketAddress remoteAddress;
 	
 	private final transient LineReader lineReader;
 	
@@ -130,11 +130,11 @@ public class HttpRequest {
 		this.body = body;
 	}
 	
-	public InetAddress getRemoteAddress() {
+	public InetSocketAddress getRemoteAddress() {
 		return remoteAddress;
 	}
 	
-	public void setRemoteAddress(InetAddress remoteAddress) {
+	public void setRemoteAddress(InetSocketAddress remoteAddress) {
 		this.remoteAddress = remoteAddress;
 	}
 

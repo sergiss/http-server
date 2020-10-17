@@ -2,6 +2,7 @@ package com.delmesoft.httpserver;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 
@@ -58,7 +59,7 @@ public class HttpClient implements Runnable {
 				final OutputStream os = socket.getOutputStream();
 				HttpResponse httpResponse;
 				HttpRequest httpRequest = new HttpRequest();
-				httpRequest.setRemoteAddress(socket.getInetAddress());
+				httpRequest.setRemoteAddress((InetSocketAddress) socket.getRemoteSocketAddress());
 				boolean keepAlive = true;
 				while(keepAlive && httpRequest.read(is)) {
 					try {
