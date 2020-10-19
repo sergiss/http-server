@@ -1,16 +1,10 @@
 package com.delmesoft.httpserver;
 
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.delmesoft.httpserver.utils.LineReader;
 import com.delmesoft.httpserver.utils.Utils;
@@ -46,8 +40,6 @@ import com.delmesoft.httpserver.utils.Utils;
  */
 public class HttpRequest {
 	
-	public static Pattern CONTENT_DISPOSITION_MATCHER = Pattern.compile("(\s?Content-Disposition\s?:\s?)(.*)");
-	
 	private String method;
 	private String path;
 	private String protocol;
@@ -56,9 +48,9 @@ public class HttpRequest {
 	private Map<String, String> parameters;
 	private Map<String, String> cookies;
 	
-	private byte[] body;
-	
 	private InetSocketAddress remoteAddress;
+	
+	private InputStream inputStream;
 	
 	private final transient LineReader lineReader;
 	
@@ -121,6 +113,12 @@ public class HttpRequest {
 		}
 		return result;
 	}
+	
+	public int getHeaderAsInt(String key) {
+		String result = getHeader(key);
+		if(result == null) return -1;
+		return Integer.parseInt(result);
+	}
 
 	public Map<String, String> getCookies() {
 		return cookies;
@@ -129,15 +127,15 @@ public class HttpRequest {
 	public void setCookies(Map<String, String> cookies) {
 		this.cookies = cookies;
 	}
-	
-	public byte[] getBody() {
-		return body;
+		
+	public InputStream getInputStream() {
+		return inputStream;
 	}
 
-	public void setBody(byte[] body) {
-		this.body = body;
+	public void setInputStream(InputStream inputStream) {
+		this.inputStream = inputStream;
 	}
-	
+
 	public InetSocketAddress getRemoteAddress() {
 		return remoteAddress;
 	}
@@ -153,6 +151,8 @@ public class HttpRequest {
 	 * @throws Exception Connection error
 	 */
 	public boolean read(InputStream is) throws Exception {
+		
+		this.inputStream = is;
 
 		String line = lineReader.readLine(is);
 		if(line == null) { 
@@ -197,13 +197,10 @@ public class HttpRequest {
 			break;
 		case "POST": // modify/update resource
 		case "PUT":  // create resource
-					
+
 			final String contentType = getHeader("Content-Type");
-			if(contentType != null && contentType.contains("multipart/")) {
-				// TODO : Multipart Implement https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Content-Type
-				handleMultipart(is, contentType);
-			} else {
-				value = getHeader("Content-Length");
+			value = getHeader("Content-Length");
+			if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
 				final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
 				byte[] body = new byte[contentLength];
 				int n = 0;
@@ -213,12 +210,8 @@ public class HttpRequest {
 						throw new EOFException(); // connection closed
 					n += count;
 				}
-				if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
-					String query = new String(body, 0, contentLength, "UTF-8");
-					Utils.stringToMap(query, "&", parameters);
-				} else if (contentLength > 0) {
-					this.body = body;
-				}
+				String query = new String(body, 0, contentLength, "UTF-8");
+				Utils.stringToMap(query, "&", parameters);
 			}
 					
 			break;
@@ -226,71 +219,6 @@ public class HttpRequest {
 			break;
 		}
 		return true;
-	}
-	// https://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.2
-	private void handleMultipart(InputStream is, String contentType) throws Exception { // TODO : multiple boundaries support
-		String line;
-		String[] params = contentType.split(";");
-		String boundary = params[1].split("=")[1];
-		while ((line = lineReader.readLine(is)) != null) {
-			if(line.isEmpty()) continue;
-			if (!line.contains(boundary)) {
-				throw new RuntimeException("Multipart boundary error: " + line);
-			}
-			if (line.endsWith("--"))
-				break; // end
-			line = lineReader.readLine(is);
-			Matcher matcher = HttpRequest.CONTENT_DISPOSITION_MATCHER.matcher(line);
-			String contentDisposition;
-			Map<String, String> paramMap = new HashMap<String, String>();
-			if (matcher.matches()) {
-				String entryGroup = matcher.group(2);
-				String[] entries = entryGroup.split(";");
-				contentDisposition = entries[0];
-				for(int i = 1; i < entries.length; ++i) {
-					String tmp = entries[i];
-					String[] entry = tmp.split("=");
-					String key   = entry[0].trim();
-					String value = entry[1].trim();
-					paramMap.put(key, value);
-				}
-			}
-			
-			line = lineReader.readLine(is);
-			String fileName = paramMap.get("filename");
-			if(fileName != null) {
-				fileName = Utils.removeBoundary(fileName, "\"");
-				File file = new File(Constants.TMP_FOLDER, fileName);
-				Map<String, String> fileMap = new HashMap<String, String>();
-				int index;
-				while((line = lineReader.readLine(is)) != null 
-				   && (index = line.indexOf(':')) > -1) {
-					String key   = line.substring(0, index);
-					String value = line.substring(index + 2);
-					fileMap.put(key, value);
-				}
-				String value = fileMap.get("Content-Length");
-				final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
-				byte[] buffer = new byte[1024];
-				try(OutputStream os = new FileOutputStream(file)) {
-					int n = contentLength, r;
-					while(n > 0) {
-						r = is.read(buffer, 0, Math.min(n, buffer.length));
-						if(r < 0) throw new EOFException();
-						os.write(buffer, 0, r);
-						n -= r;
-					}
-				}
-				parameters.put(fileName, file.getAbsolutePath());
-				
-			} else {
-				String name = paramMap.get("name");
-				name = Utils.removeBoundary(name, "\"");
-				line = lineReader.readLine(is);
-				parameters.put(name, line);
-			}
-
-		}
 	}
 
 	@Override
