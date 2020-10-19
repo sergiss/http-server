@@ -1,7 +1,11 @@
 package com.delmesoft.httpserver;
 
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -224,7 +228,7 @@ public class HttpRequest {
 		return true;
 	}
 	// https://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.2
-	private void handleMultipart(InputStream is, String contentType) throws Exception {
+	private void handleMultipart(InputStream is, String contentType) throws Exception { // TODO : multiple boundaries support
 		String line;
 		String[] params = contentType.split(";");
 		String boundary = params[1].split("=")[1];
@@ -253,9 +257,31 @@ public class HttpRequest {
 			}
 			
 			line = lineReader.readLine(is);
-			if(paramMap.containsKey("filename")) {
-				
-				throw new RuntimeException("Unimplemented"); // TODO : 
+			String fileName = paramMap.get("filename");
+			if(fileName != null) {
+				fileName = Utils.removeBoundary(fileName, "\"");
+				File file = new File(Constants.TMP_FOLDER, fileName);
+				Map<String, String> fileMap = new HashMap<String, String>();
+				int index;
+				while((line = lineReader.readLine(is)) != null 
+				   && (index = line.indexOf(':')) > -1) {
+					String key   = line.substring(0, index);
+					String value = line.substring(index + 2);
+					fileMap.put(key, value);
+				}
+				String value = fileMap.get("Content-Length");
+				final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
+				byte[] buffer = new byte[1024];
+				try(OutputStream os = new FileOutputStream(file)) {
+					int n = contentLength, r;
+					while(n > 0) {
+						r = is.read(buffer, 0, Math.min(n, buffer.length));
+						if(r < 0) throw new EOFException();
+						os.write(buffer, 0, r);
+						n -= r;
+					}
+				}
+				parameters.put(fileName, file.getAbsolutePath());
 				
 			} else {
 				String name = paramMap.get("name");

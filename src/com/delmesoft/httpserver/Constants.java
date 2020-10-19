@@ -37,6 +37,8 @@ public class Constants {
 	
 	public static final String PROTOCOL = "HTTP/1.1";
 	
+	public static final String TMP_FOLDER = System.getProperty("java.io.tmpdir");
+	
 	public static final SimpleDateFormat DATE_FORMAT;
     
     static {
