@@ -81,4 +81,10 @@ public class Utils {
 		}
 	}
 
+	public static String removeBoundary(String value, String boundary) {
+		int i = value.startsWith(boundary) ? boundary.length() : 0;
+		int j = value.endsWith(boundary) ? value.length() - boundary.length() : value.length();
+		return value.substring(i, j);
+	}
+
 }

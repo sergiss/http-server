@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.delmesoft.httpserver.utils.LineReader;
 import com.delmesoft.httpserver.utils.Utils;
@@ -39,6 +41,8 @@ import com.delmesoft.httpserver.utils.Utils;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 public class HttpRequest {
+	
+	public static Pattern CONTENT_DISPOSITION_MATCHER = Pattern.compile("(\s?Content-Disposition\s?:\s?)(.*)");
 	
 	private String method;
 	private String path;
@@ -145,6 +149,7 @@ public class HttpRequest {
 	 * @throws Exception Connection error
 	 */
 	public boolean read(InputStream is) throws Exception {
+
 		String line = lineReader.readLine(is);
 		if(line == null) { 
 			return false;
@@ -188,32 +193,78 @@ public class HttpRequest {
 			break;
 		case "POST": // modify/update resource
 		case "PUT":  // create resource
-			
-			// TODO : Multipart Implement https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Content-Type
-			
-			value = getHeader("Content-Length");
-			final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
-			byte[] body = new byte[contentLength];
-			int n = 0;
-			while (n < contentLength) { // read all bytes
-				int count = is.read(body, n, contentLength - n);
-				if (count < 0)
-					throw new EOFException(); // connection closed
-				n += count;
+					
+			final String contentType = getHeader("Content-Type");
+			if(contentType != null && contentType.contains("multipart/")) {
+				// TODO : Multipart Implement https://developer.mozilla.org/es/docs/Web/HTTP/Headers/Content-Type
+				handleMultipart(is, contentType);
+			} else {
+				value = getHeader("Content-Length");
+				final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
+				byte[] body = new byte[contentLength];
+				int n = 0;
+				while (n < contentLength) { // read all bytes
+					int count = is.read(body, n, contentLength - n);
+					if (count < 0)
+						throw new EOFException(); // connection closed
+					n += count;
+				}
+				if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
+					String query = new String(body, 0, contentLength, "UTF-8");
+					Utils.stringToMap(query, "&", parameters);
+				} else if (contentLength > 0) {
+					this.body = body;
+				}
 			}
-			String contentType = getHeader("Content-Type");
-			if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
-				String query = new String(body, 0, contentLength, "UTF-8");
-				Utils.stringToMap(query, "&", parameters);
-			} else if (contentLength > 0) {
-				this.body = body;
-			}
-			
+					
 			break;
 		default:
 			break;
 		}
 		return true;
+	}
+	// https://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.2
+	private void handleMultipart(InputStream is, String contentType) throws Exception {
+		String line;
+		String[] params = contentType.split(";");
+		String boundary = params[1].split("=")[1];
+		while ((line = lineReader.readLine(is)) != null) {
+			if(line.isEmpty()) continue;
+			if (!line.contains(boundary)) {
+				throw new RuntimeException("Multipart boundary error: " + line);
+			}
+			if (line.endsWith("--"))
+				break; // end
+			line = lineReader.readLine(is);
+			Matcher matcher = HttpRequest.CONTENT_DISPOSITION_MATCHER.matcher(line);
+			String contentDisposition;
+			Map<String, String> paramMap = new HashMap<String, String>();
+			if (matcher.matches()) {
+				String entryGroup = matcher.group(2);
+				String[] entries = entryGroup.split(";");
+				contentDisposition = entries[0];
+				for(int i = 1; i < entries.length; ++i) {
+					String tmp = entries[i];
+					String[] entry = tmp.split("=");
+					String key   = entry[0].trim();
+					String value = entry[1].trim();
+					paramMap.put(key, value);
+				}
+			}
+			
+			line = lineReader.readLine(is);
+			if(paramMap.containsKey("filename")) {
+				
+				throw new RuntimeException("Unimplemented"); // TODO : 
+				
+			} else {
+				String name = paramMap.get("name");
+				name = Utils.removeBoundary(name, "\"");
+				line = lineReader.readLine(is);
+				parameters.put(name, line);
+			}
+
+		}
 	}
 
 	@Override
