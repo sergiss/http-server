@@ -83,14 +83,4 @@ public interface HttpServer {
 	 */
 	HttpListener getHttpListener();
 
-	/**
-	 * Return new instance of HttpServer
-	 * @param host listening host
-	 * @param port listening port
-	 * @return HttpServer instance
-	 */
-	public static HttpServer newInstance(String host, int port) {
-		return new HttpServerImpl(host, port);
-	}
-
 }
