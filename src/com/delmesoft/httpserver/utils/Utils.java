@@ -1,5 +1,8 @@
 package com.delmesoft.httpserver.utils;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -68,16 +71,36 @@ public class Utils {
 	}
 	
 	public static void stringToMap(String value, String splitRegex, Map<String, String> result) {
+		stringToMap(value, 0, splitRegex, result);
+	}
+	
+	public static void stringToMap(String value, int offset, String splitRegex, Map<String, String> result) {
 		if (value != null) {
 			int idx;
+			value = value.substring(offset);
 			for (String pair : value.split(splitRegex)) {
 				idx = pair.indexOf('=');
 				if (idx > -1) {
-					result.put(pair.substring(0, idx), pair.substring(idx + 1)); // TODO : .trim()?
+					String key = pair.substring(0, idx).trim();
+					String val = pair.substring(idx + 1).trim(); 
+					result.put(key, val);
 				} else {
 					result.put(pair, null);
 				}
 			}
+		}
+	}
+	
+	public static void readFully(InputStream inputStream, byte[] data) throws IOException {
+		readFully(inputStream, data, 0, data.length);
+	}
+	
+	public static void readFully(InputStream inputStream, byte[] data, int off, int len) throws IOException {
+		int r, n = 0;
+		while(n < len) {
+			r = inputStream.read(data, off + n, len - n);
+			if(r < 0) throw new EOFException();
+			n += r;
 		}
 	}
 

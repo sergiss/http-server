@@ -74,7 +74,7 @@ public class HttpClient implements Runnable {
 					httpResponse.write(os);
 				}
 			} catch (Exception e) { // ignore
-				e.printStackTrace();
+				// e.printStackTrace();
 			} finally {
 				disconnect();
 			}
