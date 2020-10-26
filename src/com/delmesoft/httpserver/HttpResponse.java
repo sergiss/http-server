@@ -59,6 +59,7 @@ public class HttpResponse {
 		UNAUTHORIZED(401, "Unauthorized"),
 		FORBIDDEN   (403, "Forbidden"),
 		NOT_FOUND   (404, "Not Found"),
+		NOT_ALLOWED (405, "Method Not Allowed"),
 		CONFLICT    (409, "Conflict"),
 		INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 		

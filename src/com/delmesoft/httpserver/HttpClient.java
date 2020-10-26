@@ -66,8 +66,12 @@ public class HttpClient implements Runnable {
 						httpResponse = httpServer.getHttpListener().onHttpRequest(httpRequest);
 						keepAlive = handleConnection(httpRequest, httpResponse);
 					} catch (Exception e) {
-						HttpServer.log.log(Level.WARNING, "Internal Server Error", e);
-						httpResponse = HttpResponse.build(Status.INTERNAL_SERVER_ERROR);
+						if(e instanceof HttpException) {
+							httpResponse = HttpResponse.build(((HttpException) e).getStatus());
+						} else {
+							HttpServer.log.log(Level.WARNING, "Internal Server Error", e);
+							httpResponse = HttpResponse.build(Status.INTERNAL_SERVER_ERROR);
+						}
 						httpResponse.addHeader("Connection", "close");
 						keepAlive = false;
 					}

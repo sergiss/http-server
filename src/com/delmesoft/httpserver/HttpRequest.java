@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.delmesoft.httpserver.HttpResponse.Status;
 import com.delmesoft.httpserver.utils.LineReader;
 import com.delmesoft.httpserver.utils.Utils;
 
@@ -197,7 +198,6 @@ public class HttpRequest {
 			break;
 		case "POST": // modify/update resource
 		case "PUT":  // create resource
-
 			final String contentType = getHeader("Content-Type");
 			value = getHeader("Content-Length");
 			if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
@@ -213,10 +213,9 @@ public class HttpRequest {
 				String query = new String(body, 0, contentLength, "UTF-8");
 				Utils.stringToMap(query, "&", parameters);
 			}
-					
 			break;
 		default:
-			break;
+			throw new HttpException("Unsupported method").setStatus(Status.NOT_ALLOWED);
 		}
 		return true;
 	}

@@ -1,5 +1,7 @@
 package com.delmesoft.httpserver;
 
+import com.delmesoft.httpserver.HttpResponse.Status;
+
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
  * All rights reserved.
@@ -32,13 +34,24 @@ package com.delmesoft.httpserver;
 public class HttpException extends Exception {
 
 	private static final long serialVersionUID = 7878467049975298856L;
-
+	
+	private Status status;
+	
 	public HttpException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
 	public HttpException(String message) {
 		super(message);
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public HttpException setStatus(Status status) {
+		this.status = status;
+		return this;
 	}
 
 }
