@@ -50,7 +50,7 @@ public class HttpResponse {
 	private static final byte[] NEW_LINE = { 13, 10 };
 	
 	public enum Status {
-		
+		SWITCHING_PROTOCOL(101, "Switching Protocol"),
 		OK          (200, "OK"), 
 		CREATED     (201, "Created"), 
 		NO_CONTENT  (204, "No Content"), 
@@ -88,6 +88,8 @@ public class HttpResponse {
 	private InputStream content;
 	private int contentLength;
 	
+	private Session session;
+	
 	public HttpResponse() {
 		headers = new HashMap<>();
 		cookies = new ArrayList<>();
@@ -113,6 +115,14 @@ public class HttpResponse {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public Session getSession() {
+		return session;
+	}
+
+	public void setSession(Session session) {
+		this.session = session;
 	}
 
 	public InputStream getContent() {
@@ -164,8 +174,12 @@ public class HttpResponse {
 		this.cookies.add(cookie);
 		return this;
 	}
+	
+	public void write() throws Exception {
+		write(session.getOutputStream());
+	}
 
-	public void write(OutputStream os) throws Exception {	
+	protected void write(OutputStream os) throws Exception {	
 		// write <protocol> <code> <message>
 		String line = String.format("%s %d %s\r\n", Constants.PROTOCOL, code, message);
 		os.write(line.getBytes());

@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 import com.delmesoft.httpserver.HttpResponse.Status;
+import com.delmesoft.httpserver.webserver.WebServerHandler;
 
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
@@ -36,7 +37,7 @@ import com.delmesoft.httpserver.HttpResponse.Status;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
-public class WebHandlerTest {
+public class WebServerHandlerTest {
 
 	public static void main(String[] args) throws HttpException {
 		
@@ -46,7 +47,7 @@ public class WebHandlerTest {
 		System.out.printf("HttpServer listening, host: %s, port: %d\n", host, port);
 		
 		HttpServer httpServer = new HttpServerImpl(host, port);
-		WebHandler webHandler = new WebHandler() {
+		WebServerHandler webHandler = new WebServerHandler() {
 			@Override
 			public HttpResponse handleQuery(HttpRequest httpRequest) {
 				String value = httpRequest.getParameters().get("message");

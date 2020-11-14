@@ -3,10 +3,12 @@ package com.delmesoft.httpserver.utils;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
@@ -39,7 +41,9 @@ import java.util.Map;
  */
 public class Utils {
 	
-	public static Map<String, String> mimeTypeMap = new HashMap<>();
+	public static final Random random = new Random();
+	
+	public static final Map<String, String> mimeTypeMap = new HashMap<>();
 	static {
 		mimeTypeMap.put(".html", "text/html");
 		mimeTypeMap.put(".js"  , "application/javascript");
@@ -104,4 +108,44 @@ public class Utils {
 		}
 	}
 
+	public static byte readByte(InputStream is) throws IOException {
+		int result = is.read();
+		if(result < 0) {
+			throw new EOFException();
+		}
+		return (byte) result;
+	}
+
+	public static int readShort(InputStream is) throws IOException {
+		return readByte(is) << 8 
+			| (readByte(is) & 0xFF);
+	}
+
+	public static long readLong(InputStream is) throws IOException {
+		return readByte(is) << 56 
+			| (readByte(is) & 0xFF) << 48 
+		    | (readByte(is) & 0xFF) << 40 
+			| (readByte(is) & 0xFF) << 32 
+			| (readByte(is) & 0xFF) << 24 
+			| (readByte(is) & 0xFF) << 16 
+			| (readByte(is) & 0xFF) << 8 
+			| (readByte(is) & 0xFF);
+	}
+
+	public static void writeShort(int value, OutputStream os) throws IOException {
+		os.write(value >> 8);
+		os.write(value);
+	}
+	
+	public static void writeLong(long value, OutputStream os) throws IOException {		
+		os.write((byte) (value >> 56));
+		os.write((byte) (value >> 48));
+		os.write((byte) (value >> 40));
+		os.write((byte) (value >> 32));
+		os.write((byte) (value >> 24));
+		os.write((byte) (value >> 16));
+		os.write((byte) (value >> 8));
+		os.write((byte) value);
+	}
+	
 }

@@ -40,7 +40,7 @@ public class MultipartReader {
 	// https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
 	public static void handleMultipart(HttpRequest httpRequest, DataListener listener) throws Exception {
 		String contentType = httpRequest.getHeader("Content-Type");
-		handleMultipart(contentType, httpRequest.getInputStream(), listener);
+		handleMultipart(contentType, httpRequest.getSession().getInputSream(), listener);
 	}
 	
 	private static void handleMultipart(String contentType, InputStream is, DataListener listener) throws Exception {

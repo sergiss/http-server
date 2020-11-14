@@ -1,10 +1,13 @@
-package com.delmesoft.httpserver;
+package com.delmesoft.httpserver.webserver;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.delmesoft.httpserver.HttpListener;
+import com.delmesoft.httpserver.HttpRequest;
+import com.delmesoft.httpserver.HttpResponse;
 import com.delmesoft.httpserver.HttpResponse.Status;
 import com.delmesoft.httpserver.utils.Utils;
 
@@ -37,7 +40,7 @@ import com.delmesoft.httpserver.utils.Utils;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
-public abstract class WebHandler implements HttpListener {
+public abstract class WebServerHandler implements HttpListener {
 	
 	public static final String DEFAULT_CONTENT_FOLDER = "WebContent";
 	public static final String DEFAULT_INDEX = "/index.html";
@@ -47,11 +50,11 @@ public abstract class WebHandler implements HttpListener {
 	
 	private int gzipMinLength = 2048; // min content length for enable gzip
 	
-	public WebHandler() {
+	public WebServerHandler() {
 		this(DEFAULT_CONTENT_FOLDER);
 	}
 
-	public WebHandler(String contentFolder) {
+	public WebServerHandler(String contentFolder) {
 		this.contentFolder = contentFolder;
 		this.indexMap = new HashMap<>();
 		indexMap.put("/", DEFAULT_INDEX); // Default

@@ -49,9 +49,9 @@ public class HttpRequest {
 	private Map<String, String> parameters;
 	private Map<String, String> cookies;
 	
-	private InetSocketAddress remoteAddress;
+	private transient InetSocketAddress remoteAddress;
 	
-	private InputStream inputStream;
+	private transient Session session;
 	
 	private final transient LineReader lineReader;
 	
@@ -128,13 +128,13 @@ public class HttpRequest {
 	public void setCookies(Map<String, String> cookies) {
 		this.cookies = cookies;
 	}
-		
-	public InputStream getInputStream() {
-		return inputStream;
+	
+	public Session getSession() {
+		return session;
 	}
 
-	public void setInputStream(InputStream inputStream) {
-		this.inputStream = inputStream;
+	public void setSession(Session session) {
+		this.session = session;
 	}
 
 	public InetSocketAddress getRemoteAddress() {
@@ -144,6 +144,10 @@ public class HttpRequest {
 	public void setRemoteAddress(InetSocketAddress remoteAddress) {
 		this.remoteAddress = remoteAddress;
 	}
+	
+	public boolean read() throws Exception {
+		return read(session.getInputSream());
+	}
 
 	/**
 	 * Decode HTTP request
@@ -151,10 +155,7 @@ public class HttpRequest {
 	 * @return true if connection must remain open
 	 * @throws Exception Connection error
 	 */
-	public boolean read(InputStream is) throws Exception {
-		
-		this.inputStream = is;
-
+	protected boolean read(InputStream is) throws Exception {
 		String line = lineReader.readLine(is);
 		if(line == null) { 
 			return false;
