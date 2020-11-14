@@ -61,6 +61,7 @@ public class WebServerHandlerTest {
 				return new FileInputStream(file); // Convert content to input stream
 			}
 		};
+		
 		// set web content folder
 		webHandler.setContentFolder("WebContent");
 		// add context
