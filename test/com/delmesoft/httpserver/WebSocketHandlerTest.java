@@ -12,7 +12,7 @@ public class WebSocketHandlerTest {
 		String host = "127.0.0.1";
 		int port = 8081;
 
-		System.out.printf("Websocket Server listening, host: %s, port: %d\n", host, port);
+		System.out.printf("WebSocket Server listening, host: %s, port: %d\n", host, port);
 		
 		HttpServer httpServer = new HttpServerImpl(host, port);
 		
