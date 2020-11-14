@@ -1,7 +1,9 @@
 package com.delmesoft.httpserver;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,20 +42,27 @@ public class Session {
 	private static final AtomicLong ids = new AtomicLong();
 
 	private final long id = ids.incrementAndGet();
+	
+	private final Socket socket;
 
 	private final InputStream is;
 	private final OutputStream os;
 
 	private final Properties properties;
 
-	public Session(InputStream is, OutputStream os) {
-		this.is = is;
-		this.os = os;
+	public Session(Socket socket) throws IOException {
+		this.socket = socket;
+		this.is = socket.getInputStream();
+		this.os = socket.getOutputStream();
 		this.properties = new Properties();
 	}
 
 	public long getId() {
 		return id;
+	}
+	
+	public Socket getSocket() {
+		return socket;
 	}
 
 	public InputStream getInputSream() {

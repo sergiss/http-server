@@ -61,21 +61,21 @@ public abstract class WebSocketHandler implements HttpListener {
 		}
 		return HttpResponse.build(Status.BAD_REQUEST);
 	}
-   // https://developer.mozilla.org/es/docs/Web/API/WebSockets_API/Escribiendo_servidores_con_WebSocket
+	
+    // https://developer.mozilla.org/es/docs/Web/API/WebSockets_API/Escribiendo_servidores_con_WebSocket
 	@Override
 	public boolean onHttpResponse(HttpResponse httpResponse) throws Exception {
 		
 		httpResponse.write();
 		
 		final Session session = httpResponse.getSession();
-		byte[] mask = new byte[4];
-		Utils.random.nextBytes(mask);
-		session.getProperties().put("mask", mask);
+		
 		final InputStream is = session.getInputSream();
 		
+		session.getSocket().setSoTimeout(0);
 		onOpen(session);
 		
-		mask = new byte[4];
+		final byte[] mask = new byte[4];
 		byte[] buffer = new byte[125];
 		int index = 0;
 		try {
@@ -128,10 +128,10 @@ public abstract class WebSocketHandler implements HttpListener {
 					case 8: // connection close
 						return false;
 					case 9: // ping
-						// TODO : not implemented
+						send(buffer, 0, index, (byte) 0xA, true, session); // send pong
 						break;
 					case 0xA: // pong
-						// TODO : not implemented
+						onPong(buffer, index, session);
 						break;
 					default:
 						break;
@@ -152,16 +152,26 @@ public abstract class WebSocketHandler implements HttpListener {
 	public void onClose(Session session) {
 		// TODO Auto-generated method stub
 	}
+	
+	private void onPong(byte[] buffer, int length, Session session) {
+		// TODO Auto-generated method stub
+	}
 
 	public abstract void onText(String text, Session session);
 
 	public abstract void onData(byte[] data, int len, Session session);
 	
+	public void sendPing(byte[] data, Session session) throws Exception {
+		sendPing(data, 0, data.length, session);
+	}
+	
+	public void sendPing(byte[] data, int offset, int len, Session session) throws Exception {
+		send(data, offset, len, (byte) 0x9, true, session); // send pong
+	}
 	
 	public void sendText(String text, Session session) throws Exception {
 		byte[] data = text.getBytes("UTF-8");
-		byte[] mask = (byte[]) session.getProperties().get("mask");
-		send(data, 0, data.length, mask, (byte) 1, true, session); // text
+		send(data, 0, data.length, (byte) 1, true, session); // text
 	}
 	
 	public void sendData(byte[] data, Session session) throws Exception {
@@ -169,47 +179,27 @@ public abstract class WebSocketHandler implements HttpListener {
 	}
 	
 	public void sendData(byte[] data, int off, int len, Session session) throws Exception {
-		byte[] mask = (byte[]) session.getProperties().get("mask");
-		send(data, off, len, mask, (byte) 2, true, session); // binary
+		send(data, off, len, (byte) 2, true, session); // binary
 	}
 	
-	private void send(byte[] data, int off, int len, byte[] mask, byte opcode, boolean fin, Session session) throws Exception {
+	private void send(byte[] data, int off, int len, byte opcode, boolean fin, Session session) throws Exception {
 		final OutputStream os = session.getOutputStream();
 		byte header = opcode;
-		if(fin) {
+		if (fin) {
 			header |= 0x80;
 		}
 		os.write(header);
 		// payload len
-        if(len < 126) {
-        	if(mask != null) {
-        		os.write(len | 0x80);
-        	} else {
-        		os.write(len);
-        	}
-        } else if(len < 127) {
-        	if(mask != null) {
-        		os.write(126 | 0xFE);
-        	} else {
-        		os.write(126);
-        	}
-        	Utils.writeShort(len, os);
-        } else {
-        	if(mask != null) {
-        		os.write(127 | 0xFF);
-        	} else {
-        		os.write(127);
-        	}
-        	Utils.writeLong(len, os);
-        }
-        if(mask != null) {
-        	os.write(mask);
-        	 for (int i = 0; i < len; ++i) {
-                 os.write(data[i] ^ mask[i % 4]); // DECODED[i] ^ MASK[i % 4];
-             }
-        } else {
-        	os.write(data, off, len);
-        }
+		if (len < 126) {
+			os.write(len);
+		} else if (len < 127) {
+			os.write(126);
+			Utils.writeShort(len, os);
+		} else {
+			os.write(127);
+			Utils.writeLong(len, os);
+		}
+		os.write(data, off, len);
 		os.flush();
 	}
 	

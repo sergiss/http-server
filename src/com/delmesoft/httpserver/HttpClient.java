@@ -1,7 +1,5 @@
 package com.delmesoft.httpserver;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -55,15 +53,14 @@ public class HttpClient implements Runnable {
 		if (!isConnected()) {
 			try {
 				connected = true;
-				final InputStream  is = socket.getInputStream();
-				final OutputStream os = socket.getOutputStream();
-				Session session = new Session(is, os);
-				HttpResponse httpResponse;
+				final Session session = new Session(socket);
+				
 				HttpRequest httpRequest = new HttpRequest();
 				httpRequest.setRemoteAddress((InetSocketAddress) socket.getRemoteSocketAddress());
 				httpRequest.setSession(session);
 				boolean keepAlive = true;
 				while(keepAlive && httpRequest.read()) {
+					HttpResponse httpResponse;
 					try {
 						httpResponse = httpServer.getHttpListener().onHttpRequest(httpRequest);
 						keepAlive = handleConnection(httpRequest, httpResponse);
