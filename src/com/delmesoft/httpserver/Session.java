@@ -76,6 +76,10 @@ public class Session {
 	public Properties getProperties() {
 		return properties;
 	}
+	
+	public void close() throws IOException {
+		socket.close();
+	}
 
 	@Override
 	public String toString() {
