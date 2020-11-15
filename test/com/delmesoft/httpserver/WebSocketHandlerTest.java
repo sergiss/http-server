@@ -12,13 +12,12 @@ public class WebSocketHandlerTest {
 		String host = "127.0.0.1";
 		int port = 8081;
 
-		System.out.printf("WebSocket Server listening, host: %s, port: %d\n", host, port);
+		System.out.printf("Websocket Server listening, host: %s, port: %d\n", host, port);
 		
 		HttpServer httpServer = new HttpServerImpl(host, port);
 		
-		// set HTTP listener
-		httpServer.setHttpListener(new WebSocketHandler() {
-
+		WebSocketHandler webSocketHandler = new WebSocketHandler() {
+			
 			@Override
 			public void onOpen(Session session) {
 				System.out.println("onOpen: " + session);
@@ -43,15 +42,18 @@ public class WebSocketHandlerTest {
 			@Override
 			public void onText(String text, Session session) {
 				try { // Echo text test
-					System.out.printf("onText(id: %d): %s\n", session.getId(), text);
+					//System.out.printf("onText(id: %d): %s\n", session.getId(), text);
 					sendText(text, session); // echo test
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			
-		});
-		
+		};
+		// add websocket path
+		webSocketHandler.getIndexSet().add("/"); 
+		// set HTTP listener
+		httpServer.setHttpListener(webSocketHandler);
 		// connect server
 		httpServer.connect();
 				

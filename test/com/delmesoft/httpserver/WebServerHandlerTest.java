@@ -47,7 +47,7 @@ public class WebServerHandlerTest {
 		System.out.printf("HttpServer listening, host: %s, port: %d\n", host, port);
 		
 		HttpServer httpServer = new HttpServerImpl(host, port);
-		WebServerHandler webHandler = new WebServerHandler() {
+		WebServerHandler webServerHandler = new WebServerHandler() {
 			@Override
 			public HttpResponse handleQuery(HttpRequest httpRequest) {
 				String value = httpRequest.getParameters().get("message");
@@ -63,11 +63,11 @@ public class WebServerHandlerTest {
 		};
 		
 		// set web content folder
-		webHandler.setContentFolder("WebContent");
-		// add context
-		webHandler.getIndexMap().put("/", "/index.html"); 
+		webServerHandler.setContentFolder("WebContent");
+		// add index path
+		webServerHandler.getIndexMap().put("/", "/index.html"); 
 		// set HTTP listener
-		httpServer.setHttpListener(webHandler);
+		httpServer.setHttpListener(webServerHandler);
 		// connect server
 		httpServer.connect();
 				

@@ -33,9 +33,8 @@ public interface HttpListener {
 	
 	HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception;
 	
-	default boolean onHttpResponse(HttpResponse httpResponse) throws Exception {
+	default void onHttpResponse(HttpResponse httpResponse) throws Exception {
 		httpResponse.write();
-		return true;
 	}
 	
 }

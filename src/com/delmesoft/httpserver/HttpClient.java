@@ -75,7 +75,7 @@ public class HttpClient implements Runnable {
 						keepAlive = false;
 					}
 					httpResponse.setSession(session);
-					keepAlive &= httpServer.getHttpListener().onHttpResponse(httpResponse);
+					httpServer.getHttpListener().onHttpResponse(httpResponse);
 				}
 			} catch (Exception e) { // ignore
 				// e.printStackTrace();
@@ -89,7 +89,8 @@ public class HttpClient implements Runnable {
 		String connection = httpResponse.getHeader("Connection");
 		if (connection == null) {
 			connection = httpRequest.getHeader("Connection");
-			if (connection == null || !connection.contains("keep-alive")) {
+			if (connection == null 
+			|| !connection.contains("keep-alive")) {
 				httpResponse.addHeader("Connection", "close");
 				return false;
 			}

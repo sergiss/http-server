@@ -78,8 +78,8 @@ public interface HttpServer {
 	void setHttpListener(HttpListener httpListener);
 	
 	/**
-	 * Get httpListener
-	 * @return httpListener
+	 * Get HttpListener
+	 * @return
 	 */
 	HttpListener getHttpListener();
 

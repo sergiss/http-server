@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.delmesoft.httpserver.HttpListener;
 import com.delmesoft.httpserver.HttpRequest;
@@ -45,104 +47,117 @@ public abstract class WebSocketHandler implements HttpListener {
 	
 	public static final String UUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	
-	public WebSocketHandler() {}
+	private Set<String> indexSet = new HashSet<>();
+	
+	public WebSocketHandler() {
+		indexSet.add("/"); // Default
+	}
 	
 	@Override
 	public HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception {
 		final String key = httpRequest.getHeader("Sec-WebSocket-Key");
-		if (key != null) {
-			HttpResponse response = HttpResponse.build(Status.SWITCHING_PROTOCOL);
-			byte[] src = MessageDigest.getInstance("SHA-1").digest((key + UUID).getBytes("UTF-8"));
-			String secWebSocketAccept = Base64.getEncoder().encodeToString(src);
-			response.addHeader("Sec-WebSocket-Accept", secWebSocketAccept);
-			response.addHeader("Upgrade", "websocket");
-			response.addHeader("Connection", "Upgrade");
-			return response;
+		if (key != null) { // finalPoint is empty || finalPoint contains path
+			// if (indexSet.contains(httpRequest.getPath())) {
+				HttpResponse response = HttpResponse.build(Status.SWITCHING_PROTOCOL);
+				byte[] src = MessageDigest.getInstance("SHA-1").digest((key + UUID).getBytes("UTF-8"));
+				String secWebSocketAccept = Base64.getEncoder().encodeToString(src);
+				response.addHeader("Sec-WebSocket-Accept", secWebSocketAccept);
+				response.addHeader("Upgrade", "websocket");
+				response.addHeader("Connection", "Upgrade");
+				return response;
+//			} else {
+//				return HttpResponse.build(Status.NOT_FOUND);
+//			}
 		}
 		return HttpResponse.build(Status.BAD_REQUEST);
 	}
 	
-    // https://developer.mozilla.org/es/docs/Web/API/WebSockets_API/Escribiendo_servidores_con_WebSocket
+	// https://developer.mozilla.org/es/docs/Web/API/WebSockets_API/Escribiendo_servidores_con_WebSocket
 	@Override
-	public boolean onHttpResponse(HttpResponse httpResponse) throws Exception {
-		
+	public void onHttpResponse(HttpResponse httpResponse) throws Exception {
+
 		httpResponse.write();
-		
-		final Session session = httpResponse.getSession();
-		
-		final InputStream is = session.getInputSream();
-		
-		session.getSocket().setSoTimeout(0);
-		onOpen(session);
-		
-		final byte[] mask = new byte[4];
-		byte[] buffer = new byte[125];
-		int index = 0;
-		try {
-			while(true) {
-				byte head = Utils.readByte(is);
 
-				//  RSV1, RSV2, RSV3
-				if((head & 0x70) > 0) {
-					throw new RuntimeException("RSV1, RSV2, RSV3 must be 0");
-				}
+		if(httpResponse.getCode() == Status.SWITCHING_PROTOCOL.getCode()) {
 
-				int opcode = head & 0xF;
-				boolean fin = (head & 0x80) == 0x80;
+			final Session session = httpResponse.getSession();
+			final InputStream is = session.getInputSream();
 
-				byte dataInfo = Utils.readByte(is);
-				int len = (dataInfo & 0x7F); // payload len
-				switch (len) { // check Extended payload length 
-				case 126:
-					len = Utils.readShort(is);
-					break;
-				case 127:
-					len = (int) Utils.readLong(is);
-					break;
-				}
+			session.getSocket().setSoTimeout(0);
+			onOpen(session);
 
-				if(buffer.length - index < len) { 
-					buffer = new byte[index + len]; // resize buffer
-				}
+			final byte[] mask = new byte[4];
+			byte[] buffer = new byte[125];
+			int index = 0;
+			try {
 
-				if ((dataInfo & 0x80) == 0x80) { // check mask
-					Utils.readFully(is, mask); // read mask
-					Utils.readFully(is, buffer, index, len); // read data
-					for (int i = 0; i < len; ++i) { // Reading and Unmasking the Data
-						buffer[i] ^= mask[i % 4]; // ENCODED[i] ^ MASK[i % 4];
+				while(true) {
+
+					final byte head = Utils.readByte(is);
+
+					//  RSV1, RSV2, RSV3
+					if((head & 0x70) > 0) {
+						throw new RuntimeException("RSV1, RSV2, RSV3 must be 0");
 					}
-				} else {
-					Utils.readFully(is, buffer, index, len); // read data
-				}
-				index += len;
-				if(fin) {
-					switch (opcode) {
-					case 0: // continue frame
+
+					byte dataInfo = Utils.readByte(is);
+					int len = (dataInfo & 0x7F); // payload len
+					switch (len) { // check Extended payload length 
+					case 126:
+						len = Utils.readShort(is);
 						break;
-					case 1: // text frame
-						onText(new String(buffer, 0, index, "UTF-8"), session);
-						break;
-					case 2: // binary frame
-						onData(buffer, index, session);
-						break;
-					case 8: // connection close
-						return false;
-					case 9: // ping
-						send(buffer, 0, index, (byte) 0xA, true, session); // send pong
-						break;
-					case 0xA: // pong
-						onPong(buffer, index, session);
-						break;
-					default:
+					case 127:
+						len = (int) Utils.readLong(is);
 						break;
 					}
-					index = 0;
+
+					if(buffer.length - index < len) { 
+						buffer = new byte[index + len]; // resize buffer
+					}
+
+					if ((dataInfo & 0x80) == 0x80) { // check mask
+						Utils.readFully(is, mask); // read mask
+						Utils.readFully(is, buffer, index, len); // read data
+						for (int i = 0; i < len; ++i) { // Reading and Unmasking the Data
+							buffer[i] ^= mask[i % 4]; // ENCODED[i] ^ MASK[i % 4];
+						}
+					} else {
+						Utils.readFully(is, buffer, index, len); // read data
+					}
+
+					index += len;
+					if((head & 0x80) == 0x80) { // fin
+						switch (head & 0xF) { // opcode
+						case 0: // continue frame
+							break;
+						case 1: // text frame
+							onText(new String(buffer, 0, index, "UTF-8"), session);
+							break;
+						case 2: // binary frame
+							onData(buffer, index, session);
+							break;
+						case 8: // connection close
+							return;
+						case 9: // ping
+							send(buffer, 0, index, (byte) 0xA, true, session); // send pong
+							break;
+						case 0xA: // pong
+							onPong(buffer, index, session);
+							break;
+						default:
+							break;
+						}
+						index = 0;
+					}
+
 				}
 
+			} finally {
+				onClose(session);
 			}
-		} finally {
-			onClose(session);
+
 		}
+		
 	}
 	
 	public void onOpen(Session session) {
@@ -201,6 +216,14 @@ public abstract class WebSocketHandler implements HttpListener {
 		}
 		os.write(data, off, len);
 		os.flush();
+	}
+
+	public Set<String> getIndexSet() {
+		return indexSet;
+	}
+
+	public void setIndexSet(Set<String> indexSet) {
+		this.indexSet = indexSet;
 	}
 	
 }
