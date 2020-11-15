@@ -57,7 +57,7 @@ public abstract class WebSocketHandler implements HttpListener {
 	public HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception {
 		final String key = httpRequest.getHeader("Sec-WebSocket-Key");
 		if (key != null) { // finalPoint is empty || finalPoint contains path
-			// if (indexSet.contains(httpRequest.getPath())) {
+			 if (indexSet.contains(httpRequest.getPath())) {
 				HttpResponse response = HttpResponse.build(Status.SWITCHING_PROTOCOL);
 				byte[] src = MessageDigest.getInstance("SHA-1").digest((key + UUID).getBytes("UTF-8"));
 				String secWebSocketAccept = Base64.getEncoder().encodeToString(src);
@@ -65,9 +65,9 @@ public abstract class WebSocketHandler implements HttpListener {
 				response.addHeader("Upgrade", "websocket");
 				response.addHeader("Connection", "Upgrade");
 				return response;
-//			} else {
-//				return HttpResponse.build(Status.NOT_FOUND);
-//			}
+			} else {
+				return HttpResponse.build(Status.NOT_FOUND);
+			}
 		}
 		return HttpResponse.build(Status.BAD_REQUEST);
 	}
