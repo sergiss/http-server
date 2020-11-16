@@ -133,19 +133,19 @@ public class Utils {
 	}
 
 	public static void writeShort(int value, OutputStream os) throws IOException {
-		os.write(value >> 8);
-		os.write(value);
+		os.write((byte) (0xFF & (value >>> 8)));
+		os.write((byte) (0xFF & value));
 	}
 	
-	public static void writeLong(long value, OutputStream os) throws IOException {		
-		os.write((byte) (value >> 56));
-		os.write((byte) (value >> 48));
-		os.write((byte) (value >> 40));
-		os.write((byte) (value >> 32));
-		os.write((byte) (value >> 24));
-		os.write((byte) (value >> 16));
-		os.write((byte) (value >> 8));
-		os.write((byte) value);
+	public static void writeLong(long value, OutputStream os) throws IOException {
+		os.write((byte) (0xFF & (value >>> 56)));
+		os.write((byte) (0xFF & (value >>> 48)));
+		os.write((byte) (0xFF & (value >>> 40)));
+		os.write((byte) (0xFF & (value >>> 32)));
+		os.write((byte) (0xFF & (value >>> 24)));
+		os.write((byte) (0xFF & (value >>> 16)));
+		os.write((byte) (0xFF & (value >>> 8)));
+		os.write((byte) (0xFF & value));
 	}
 	
 }

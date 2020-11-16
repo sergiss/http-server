@@ -91,7 +91,7 @@ public abstract class WebSocketHandler implements HttpListener {
 			int index = 0;
 			try {
 
-				while(true) {
+				while (true) {
 
 					final byte head = Utils.readByte(is);
 
@@ -206,13 +206,13 @@ public abstract class WebSocketHandler implements HttpListener {
 		os.write(header);
 		// payload len
 		if (len < 126) {
-			os.write(len);
-		} else if (len < 127) {
-			os.write(126);
+			os.write((byte) len);
+		} else if (len <= 0xFFFF) { // 16 bits
+			os.write((byte) 126);
 			Utils.writeShort(len, os);
-		} else {
-			os.write(127);
-			Utils.writeLong(len, os);
+		} else { // 64 bits
+			os.write((byte) 126);
+			Utils.writeShort(len, os);
 		}
 		os.write(data, off, len);
 		os.flush();
