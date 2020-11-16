@@ -49,6 +49,8 @@ public class Session {
 	private final OutputStream os;
 
 	private final Properties properties;
+	
+	public Object userData;
 
 	public Session(Socket socket) throws IOException {
 		this.socket = socket;
