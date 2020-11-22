@@ -62,15 +62,13 @@ public abstract class WebServerHandler implements HttpListener {
 
 	@Override
 	public HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception {
-		if (httpRequest.getParameters().isEmpty() 
-		&& "GET".equals(httpRequest.getMethod())) {
-			final String path = httpRequest.getPath();
+		if ("GET".equals(httpRequest.getMethod())) {
+			final String path  = httpRequest.getPath();
 			final String index = indexMap.get(path);
 			final File file = new File(contentFolder, index != null ? index : path);
 			return obtainResponse(httpRequest, file);
-		} else {
-			return handleQuery(httpRequest);
 		}
+		return HttpResponse.build(Status.NOT_FOUND);
 	}
 	
 	protected HttpResponse obtainResponse(HttpRequest httpRequest, File file) throws Exception {
@@ -90,8 +88,6 @@ public abstract class WebServerHandler implements HttpListener {
 	}
 
 	public abstract InputStream toStream(File file) throws Exception;
-
-	public abstract HttpResponse handleQuery(HttpRequest httpRequest);
 
 	public String getContentFolder() {
 		return contentFolder;

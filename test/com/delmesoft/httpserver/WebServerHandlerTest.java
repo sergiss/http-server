@@ -49,13 +49,18 @@ public class WebServerHandlerTest {
 		HttpServer httpServer = new HttpServerImpl(host, port);
 		WebServerHandler webServerHandler = new WebServerHandler() {
 			@Override
-			public HttpResponse handleQuery(HttpRequest httpRequest) {
-				String value = httpRequest.getParameters().get("message");
-				if("getTitle".equals(value)) {
-					return HttpResponse.build(Status.OK, "text/plain", "Fast and lightweight HTTP Server".getBytes());
+			public HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception {
+				// Rest API example
+				if(!httpRequest.getParameters().isEmpty()) {
+					String value = httpRequest.getParameters().get("message");
+					if("getTitle".equals(value)) {
+						return HttpResponse.build(Status.OK, "text/plain", "Fast and lightweight HTTP Server".getBytes());
+					}
 				}
-				return HttpResponse.build(Status.NOT_FOUND);
+				// Web Server
+				return super.onHttpRequest(httpRequest);
 			}
+			
 			@Override
 			public InputStream toStream(File file) throws Exception {
 				return new FileInputStream(file); // Convert content to input stream
