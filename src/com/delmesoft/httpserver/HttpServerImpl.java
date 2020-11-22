@@ -11,6 +11,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
+import javax.net.ssl.SSLServerSocketFactory;
+
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
  * All rights reserved.
@@ -55,6 +57,7 @@ public class HttpServerImpl implements HttpServer {
 	private Map<Long, HttpClient> httpClientMap;
 	private int socketTimeout;
 	
+	private ServerSocketProvider serverSocketProvider;
 	private ServerSocket serverSocket;
 	private Thread connectionThread;
 	
@@ -77,7 +80,8 @@ public class HttpServerImpl implements HttpServer {
 		this.port = port;
 		this.socketTimeout = socketTimeout;
 		this.httpClientMap = new HashMap<>();
-		executor = Executors.newWorkStealingPool(); // Default
+		serverSocketProvider = ServerSocketProvider.DEFAULT;
+		executor = Executors.newWorkStealingPool();
 	}
 	
 	@Override
@@ -90,7 +94,9 @@ public class HttpServerImpl implements HttpServer {
 		synchronized (lock) {
 			if (!isConnected()) {
 				try {
-					serverSocket = new ServerSocket();
+										
+					serverSocket = serverSocketProvider.createServerSocket();
+					
 					InetSocketAddress inetSocketAddress;
 					if (host != null) {
 						inetSocketAddress = new InetSocketAddress(InetAddress.getByName(host), port);
@@ -203,6 +209,14 @@ public class HttpServerImpl implements HttpServer {
 
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
+	}
+
+	public ServerSocketProvider getServerSocketProvider() {
+		return serverSocketProvider;
+	}
+
+	public void setServerSocketProvider(ServerSocketProvider serverSocketProvider) {
+		this.serverSocketProvider = serverSocketProvider;
 	}
 
 	public Executor getExecutor() {

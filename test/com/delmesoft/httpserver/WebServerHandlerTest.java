@@ -73,6 +73,10 @@ public class WebServerHandlerTest {
 		webServerHandler.getIndexMap().put("/", "/index.html"); 
 		// set HTTP listener
 		httpServer.setHttpListener(webServerHandler);
+		
+		// SSL example
+		// ((HttpServerImpl) httpServer).setServerSocketProvider(ServerSocketProvider.sslInstance(WebServerHandlerTest.class.getResourceAsStream("keystore/keystore.jks"), "password"));
+		
 		// connect server
 		httpServer.connect();
 				
