@@ -32,7 +32,7 @@ public class WebSocketHandlerTest {
 				try { // Echo data test
 					byte[] tmp = new byte[len];
 					System.arraycopy(data, 0, tmp, 0, len);
-					System.out.printf("onText(id: %d): %s\n", session.getId(), Arrays.toString(tmp));
+					System.out.printf("onData(id: %d): %s\n", session.getId(), Arrays.toString(tmp));
 					sendData(data, 0, len, session);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -42,7 +42,7 @@ public class WebSocketHandlerTest {
 			@Override
 			public void onText(String text, Session session) {
 				try { // Echo text test
-					//System.out.printf("onText(id: %d): %s\n", session.getId(), text);
+					System.out.printf("onText(id: %d): %s\n", session.getId(), text);
 					sendText(text, session); // echo test
 				} catch (Exception e) {
 					e.printStackTrace();
