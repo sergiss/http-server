@@ -65,11 +65,9 @@ public abstract class WebSocketHandler implements HttpListener {
 				response.addHeader("Upgrade", "websocket");
 				response.addHeader("Connection", "Upgrade");
 				return response;
-			} else {
-				return HttpResponse.build(Status.NOT_FOUND);
 			}
 		}
-		return HttpResponse.build(Status.BAD_REQUEST);
+		return HttpResponse.build(Status.NOT_FOUND);
 	}
 	
 	// https://developer.mozilla.org/es/docs/Web/API/WebSockets_API/Escribiendo_servidores_con_WebSocket
