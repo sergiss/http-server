@@ -1,4 +1,4 @@
-package com.delmesoft.httpserver;
+package com.delmesoft.httpserver.utils;
 
 import java.io.InputStream;
 import java.net.ServerSocket;
