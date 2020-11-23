@@ -3,7 +3,7 @@ package com.delmesoft.httpserver;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import com.delmesoft.httpserver.websocket.WebSocketHandler;
+import com.delmesoft.httpserver.handler.WebSocketHandler;
 
 public class WebSocketHandlerTest {
 

@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 import com.delmesoft.httpserver.HttpResponse.Status;
-import com.delmesoft.httpserver.webserver.WebServerHandler;
+import com.delmesoft.httpserver.handler.WebServerHandler;
 
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
