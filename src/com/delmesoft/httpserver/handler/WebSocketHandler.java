@@ -1,4 +1,4 @@
-package com.delmesoft.httpserver.websocket;
+package com.delmesoft.httpserver.handler;
 
 import java.io.InputStream;
 import java.io.OutputStream;

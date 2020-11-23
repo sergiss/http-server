@@ -1,4 +1,4 @@
-package com.delmesoft.httpserver.webserver;
+package com.delmesoft.httpserver.handler;
 
 import java.io.File;
 import java.io.InputStream;
