@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<title>Sergio Soriano - Tetris 2020</title>
+
+<!-- Meta -->
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Tetris JS">
+<meta name="author" content="Sergio Soriano - sergi.ss4@gmail.com">
+<link rel="shortcut icon" href="favicon.ico">
+
+<!-- JS -->
+<script src="assets/js/loop.js"></script>
+<script src="assets/js/tetris.js"></script>
+
+<script src="assets/js/grid.js"></script>
+<script src="assets/js/shape.js"></script>
+<script src="assets/js/key.js"></script>
+
+<!-- CSS -->
+<link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+
+<body>
+
+	<h1 id="myTitle"></h1>	
+	<a href="https://github.com/sergiss/http-server" target="_blank">Sergio S. - HTTP Server</a>
+	<div id="container"></div>
+
+	<script>
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if(this.readyState != 4) return;
+			if(this.status == 200) {
+				let title = this.responseText;
+				document.getElementById("myTitle").innerHTML = title;
+			}
+		}
+		xhr.open('GET', "/forms?message=getTitle", true);
+		xhr.send();
+
+		var tetris = new Tetris();
+		document.getElementById("container");
+		tetris.create(container);
+	</script>
+
+</body>
+</html>
