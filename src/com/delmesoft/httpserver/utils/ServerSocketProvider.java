@@ -38,17 +38,16 @@ public interface ServerSocketProvider {
 		return new ServerSocketProvider() {
 			@Override
 			public ServerSocket createServerSocket() throws Exception {
-				
-	            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-	            keyStore.load(inputStream, keyStorePassword.toCharArray());
-	            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-	            keyManagerFactory.init(keyStore, keyPassword.toCharArray());
-				TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-				trustManagerFactory.init(keyStore);
-				SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-				sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-				SSLServerSocketFactory sslServerSocketFactory = sslContext.getServerSocketFactory();
-				return sslServerSocketFactory.createServerSocket();
+	            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType()); // Default keyStore
+	            keyStore.load(inputStream, keyStorePassword.toCharArray()); // Loads this KeyStore from the given input stream
+	            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()); // Default keyManagerFactory
+	            keyManagerFactory.init(keyStore, keyPassword.toCharArray()); // Initializes this factory with a source of key material
+				TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()); // Default trustManagerFactory
+				trustManagerFactory.init(keyStore); // Initializes this factory with a source of certificate authorities and related trust material
+				SSLContext sslContext = SSLContext.getInstance("TLSv1.2"); // Returns a SSLContext object that implements the specified secure socket protocol
+				sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null); // Initializes this context.
+				SSLServerSocketFactory sslServerSocketFactory = sslContext.getServerSocketFactory(); // Returns a ServerSocketFactory object forthis context
+				return sslServerSocketFactory.createServerSocket(); // Create server socket
 			}
 		};
 	}
