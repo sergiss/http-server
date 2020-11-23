@@ -23,8 +23,8 @@ public interface ServerSocketProvider {
 	 * @param inputStream the input stream from which the keystore is loaded, or null
 	 * @param password the password used to check the integrity of the keystore, the password used to unlock the keystore, or null
 	 */
-	public static ServerSocketProvider sslInstance(InputStream inputStream, String password) {
-		return sslInstance(inputStream, password, password);
+	public static ServerSocketProvider newSslInstance(InputStream inputStream, String password) {
+		return newSslInstance(inputStream, password, password);
 	}
 	
 	/**
@@ -34,7 +34,7 @@ public interface ServerSocketProvider {
 	 * @param keyPassword the password for recovering keys in the KeyStore
 	 * @return
 	 */
-	public static ServerSocketProvider sslInstance(InputStream inputStream, String keyStorePassword, String keyPassword) {
+	public static ServerSocketProvider newSslInstance(InputStream inputStream, String keyStorePassword, String keyPassword) {
 		return new ServerSocketProvider() {
 			@Override
 			public ServerSocket createServerSocket() throws Exception {
