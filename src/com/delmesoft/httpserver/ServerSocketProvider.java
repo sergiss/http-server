@@ -1,6 +1,5 @@
 package com.delmesoft.httpserver;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.security.KeyStore;

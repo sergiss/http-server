@@ -11,8 +11,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
-import javax.net.ssl.SSLServerSocketFactory;
-
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
  * All rights reserved.
