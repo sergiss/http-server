@@ -188,8 +188,9 @@ public class HttpRequest {
 		// Handle method
 		parameters.clear();
 		switch (method) {
-		case "GET":  // retrieve data
-		case "HEAD": // retrieve only head 
+		case "GET":    // retrieve data
+		case "HEAD":   // retrieve only head 
+		case "DELETE": // delete the resource identified by the Request-URI
 			index = path.indexOf('?');
 			if (index > -1) { // check if has parameters
 				String query = path.substring(index + 1);
