@@ -4,8 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -45,9 +44,24 @@ public class Utils {
 	
 	public static final Map<String, String> mimeTypeMap = new HashMap<>();
 	static {
+		mimeTypeMap.put(".htm", "text/html");
 		mimeTypeMap.put(".html", "text/html");
 		mimeTypeMap.put(".js"  , "application/javascript");
 		mimeTypeMap.put(".css" , "text/css");
+		mimeTypeMap.put(".csv" , "text/csv");
+		mimeTypeMap.put(".gif" , "image/gif");
+		mimeTypeMap.put(".ico" , "image/x-icon");
+		mimeTypeMap.put(".jpeg", "image/jpeg");
+		mimeTypeMap.put(".jpg" , "image/jpeg");
+		mimeTypeMap.put(".png" , "image/png");
+		mimeTypeMap.put(".web" , "image/web");
+		mimeTypeMap.put(".svg" , "image/svg+xml");
+		mimeTypeMap.put(".json", "application/json");
+		mimeTypeMap.put(".xml" , "application/xml");
+		mimeTypeMap.put(".pdf" , "application/pdf");
+		mimeTypeMap.put(".zip" , "application/zip");
+		mimeTypeMap.put(".rar" , "application/x-rar-compressed");
+		mimeTypeMap.put(".tar" , "application/x-tar");
 	}
 	
 	public static String getMimeType(String fileName) throws Exception {
@@ -62,10 +76,10 @@ public class Utils {
 		}
 		String result = mimeTypeMap.get(extension);
 		if(result == null) {
-			result = Files.probeContentType(Paths.get(fileName));
-			if(result == null) {
+			/*result = Files.probeContentType(Paths.get(fileName));
+			if(result == null) {*/
 				result = "application/octet-stream";
-			}
+			/*}*/
 		}
 		return result;
 	}
