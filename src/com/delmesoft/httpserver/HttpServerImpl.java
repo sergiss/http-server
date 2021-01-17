@@ -81,7 +81,7 @@ public class HttpServerImpl implements HttpServer {
 		this.socketTimeout = socketTimeout;
 		this.httpClientMap = new HashMap<>();
 		serverSocketProvider = ServerSocketProvider.DEFAULT;
-		executor = Executors.newWorkStealingPool();
+		executor = Executors.newCachedThreadPool();
 	}
 	
 	@Override
