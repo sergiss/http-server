@@ -1,6 +1,7 @@
 package com.delmesoft.httpserver;
 
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -146,7 +147,7 @@ public class HttpRequest {
 	}
 	
 	public boolean read() throws Exception {
-		return read(session.getInputSream());
+		return read(session.getInputStream());
 	}
 
 	/**
@@ -201,18 +202,8 @@ public class HttpRequest {
 		case "POST": // modify/update resource
 		case "PUT":  // create resource
 			final String contentType = getHeader("Content-Type");
-			value = getHeader("Content-Length");
 			if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
-				final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
-				byte[] body = new byte[contentLength];
-				int n = 0;
-				while (n < contentLength) { // read all bytes
-					int count = is.read(body, n, contentLength - n);
-					if (count < 0)
-						throw new EOFException(); // connection closed
-					n += count;
-				}
-				String query = new String(body, 0, contentLength, "UTF-8");
+				String query = getContentAsString(is);
 				Utils.stringToMap(query, "&", parameters);
 			}
 			break;
@@ -220,6 +211,24 @@ public class HttpRequest {
 			throw new HttpException("Unsupported method").setStatus(Status.NOT_ALLOWED);
 		}
 		return true;
+	}
+
+	public String getContentAsString(InputStream is) throws IOException {
+		String value = getHeader("Content-Length");
+		final int contentLength = value != null ? Integer.parseInt(value) : 0; // body length
+		byte[] body = new byte[contentLength];
+		int n = 0;
+		while (n < contentLength) { // read all bytes
+			int count = is.read(body, n, contentLength - n);
+			if (count < 0)
+				throw new EOFException(); // connection closed
+			n += count;
+		}
+		return new String(body, 0, contentLength, "UTF-8");
+	}
+	
+	public String getContentAsString() throws IOException {
+		return getContentAsString(session.getInputStream());
 	}
 
 	@Override
@@ -240,5 +249,5 @@ public class HttpRequest {
 		builder.append("]");
 		return builder.toString();
 	}
-	
+
 }

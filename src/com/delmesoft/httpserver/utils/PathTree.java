@@ -1,7 +1,9 @@
 package com.delmesoft.httpserver.utils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /*
  * Copyright (c) 2020, Sergio S.- sergi.ss4@gmail.com http://sergiosoriano.com
@@ -35,19 +37,28 @@ import java.util.Map;
 public class PathTree<V> {
 
 	private PathTreeNode<V> root;
+	private Set<String> pathSet = new HashSet<>();
 
 	public PathTree() {
 		root = new PathTreeNode<>();
+	}
+	
+	public boolean contains(String path) {
+		return pathSet.contains(path);
 	}
 
 	public void add(String path, V value) {
 		String[] result = path.split("/");
 		root.insert(result, 0, value);
+		pathSet.add(path);
 	}
 
 	public V remove(String path) {
-		String[] result = path.split("/");
-		return root.remove(result, 0);
+		if(pathSet.remove(path)) {
+			String[] result = path.split("/");
+			return root.remove(result, 0);
+		}
+		return null;
 	}
 
 	public V get(String path) {
@@ -96,19 +107,17 @@ public class PathTree<V> {
 		}
 
 		public V get(String[] values, int index) {
-			index++;
 			if (index < values.length) {
 				// Search
 				PathTreeNode<V> node = nodeMap.get(values[index]);
 				if (node != null) {
-					return node.get(values, index);
+					return node.get(values, index + 1);
 				}
 			}
 			return value;
 		}
 		
 		public V remove(String[] values, int index) {
-			index++;
 			if (index >= values.length) {
 				nodeMap.clear();
 				return this.value;
@@ -118,21 +127,21 @@ public class PathTree<V> {
 				// Search
 				PathTreeNode<V> node = nodeMap.remove(dirPath);
 				if (node != null) {
-					return node.remove(values, index);
+					return node.remove(values, index + 1);
 				}
 				return null;
 			}
 		}
 
 		public V insert(String[] values, int index, V value) {
-			index++;
+	
 			if (index >= values.length) {
 				nodeMap.clear();
 				V tmp = this.value;
 				this.value = value;
 				return tmp;
 			} else {
-				this.value = null;
+				// this.value = null;
 				final String dirPath = values[index];
 				// Search
 				PathTreeNode<V> node = nodeMap.get(dirPath);
@@ -142,7 +151,7 @@ public class PathTree<V> {
 					node.setParent(this);
 					nodeMap.put(dirPath, node); // Add
 				}
-				return node.insert(values, index, value);
+				return node.insert(values, index + 1, value);
 			}
 		}
 

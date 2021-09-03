@@ -54,6 +54,7 @@ public class HttpResponse {
 		OK          (200, "OK"), 
 		CREATED     (201, "Created"), 
 		NO_CONTENT  (204, "No Content"), 
+		FOUND       (302, "FOUND"),
 		NOT_MODIFIED(303, "Not Modified"), 
 		BAD_REQUEST (400, "Bad Request"), 
 		UNAUTHORIZED(401, "Unauthorized"),
@@ -291,6 +292,10 @@ public class HttpResponse {
 	
 	public static HttpResponse build(Status status) {
 		return build(status.code, status.message);
+	}
+	
+	public static HttpResponse build(Status status, String message) {
+		return build(status.code, message);
 	}
 
 	public static HttpResponse build(Status status, String contentType, byte[] contentData) {

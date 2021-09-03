@@ -48,8 +48,8 @@ public class HttpServerImpl implements HttpServer {
 
 	private final Object lock = new Object();
 	
-	private final String host;
-	private final int port;
+	private String host;
+	private int port;
 	
 	private long ids;
 	
@@ -62,6 +62,10 @@ public class HttpServerImpl implements HttpServer {
 	private Thread connectionThread;
 	
 	private Executor executor;
+	
+	public HttpServerImpl() {
+		this(null, 8080, DEFAULT_SOCKET_TIMEOUT);
+	}
 	
 	public HttpServerImpl(int port) {
 		this(null, port, DEFAULT_SOCKET_TIMEOUT);
@@ -130,7 +134,8 @@ public class HttpServerImpl implements HttpServer {
 						executor.execute(httpClient);
 					}
 				} catch (Exception e) {
-					HttpServer.log.log(Level.SEVERE, "Internal Server Error", e);
+					if(isConnected())
+						HttpServer.log.log(Level.SEVERE, "Internal Server Error", e);
 				} finally {
 					disconnect();
 				}
@@ -165,10 +170,18 @@ public class HttpServerImpl implements HttpServer {
 	public String getHost() {
 		return host;
 	}
+	
+	public void setHost(String host) {
+		this.host = host;
+	}
 
 	@Override
 	public int getPort() {
 		return port;
+	}
+	
+	public void setPort(int port) {
+		this.port = port;
 	}
 
 	@Override
@@ -226,5 +239,6 @@ public class HttpServerImpl implements HttpServer {
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
 	}
+
 	
 }

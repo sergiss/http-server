@@ -67,7 +67,7 @@ public class Session {
 		return socket;
 	}
 
-	public InputStream getInputSream() {
+	public InputStream getInputStream() {
 		return is;
 	}
 

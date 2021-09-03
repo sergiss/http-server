@@ -79,7 +79,7 @@ public abstract class WebSocketHandler implements HttpListener {
 		if(httpResponse.getCode() == Status.SWITCHING_PROTOCOL.getCode()) {
 
 			final Session session = httpResponse.getSession();
-			final InputStream is = session.getInputSream();
+			final InputStream is = session.getInputStream();
 
 			session.getSocket().setSoTimeout(0);
 			onOpen(session);

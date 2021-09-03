@@ -2,8 +2,6 @@ package com.delmesoft.httpserver.handler;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.delmesoft.httpserver.HttpListener;
 import com.delmesoft.httpserver.HttpRequest;
@@ -43,10 +41,10 @@ import com.delmesoft.httpserver.utils.Utils;
 public abstract class WebServerHandler implements HttpListener {
 	
 	public static final String DEFAULT_CONTENT_FOLDER = "WebContent";
-	public static final String DEFAULT_INDEX = "/index.html";
+	public static final String DEFAULT_INDEX = "index.html";
 		
 	private String contentFolder;
-	private Map<String, String> indexMap;
+	private String indexPage = DEFAULT_INDEX;
 	
 	private int gzipMinLength = 2048; // min content length for enable gzip
 	
@@ -56,17 +54,16 @@ public abstract class WebServerHandler implements HttpListener {
 
 	public WebServerHandler(String contentFolder) {
 		this.contentFolder = contentFolder;
-		this.indexMap = new HashMap<>();
-		indexMap.put("/", DEFAULT_INDEX); // Default
 	}
 
 	@Override
 	public HttpResponse onHttpRequest(HttpRequest httpRequest) throws Exception {
 		if ("GET".equals(httpRequest.getMethod())) {
-			final String path  = httpRequest.getPath();
-			final String index = indexMap.get(path);
-			final File file = new File(contentFolder, index != null ? index : path);
-			return obtainResponse(httpRequest, file);
+			String path  = httpRequest.getPath();
+			if(path.equals("/")) {
+				path += indexPage; 
+			}
+			return obtainResponse(httpRequest, new File(contentFolder, path));
 		}
 		return HttpResponse.build(Status.NOT_FOUND);
 	}
@@ -97,12 +94,12 @@ public abstract class WebServerHandler implements HttpListener {
 		this.contentFolder = contentFolder;
 	}
 
-	public Map<String, String> getIndexMap() {
-		return indexMap;
+	public String getIndexPage() {
+		return indexPage;
 	}
 
-	public void setIndexMap(Map<String, String> indexMap) {
-		this.indexMap = indexMap;
+	public void setIndexPage(String indexPage) {
+		this.indexPage = indexPage;
 	}
 
 	public int getGzipMinLength() {

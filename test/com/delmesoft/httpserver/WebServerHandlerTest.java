@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Scanner;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import com.delmesoft.httpserver.HttpResponse.Status;
 import com.delmesoft.httpserver.handler.WebServerHandler;
@@ -72,7 +70,7 @@ public class WebServerHandlerTest {
 		// set web content folder
 		webServerHandler.setContentFolder("WebContent");
 		// add index path
-		webServerHandler.getIndexMap().put("/", "/index.html"); 
+		webServerHandler.setIndexPage("index.html"); 
 		// set HTTP listener
 		httpServer.setHttpListener(webServerHandler);
 		
